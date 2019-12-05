@@ -1,6 +1,8 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import axios from 'axios';
+import StarMatch from './StarGame';
 
 // function App() {
 //     return (
@@ -36,7 +38,7 @@ const testData = [
 
 const CardList = (props) => (
     <div>
-        {props.profiles.map(profile => <Card {...profile}/>)}
+        {props.profiles.map(profile => <Card key={profile.id} {...profile}/>)}
 
     </div>
 );
@@ -59,9 +61,13 @@ class Card extends React.Component {
 class Form extends React.Component {
     state = {userName: ''};
     // userNameInput = React.createRef();
-    handleSubmit = (event) => {
+    handleSubmit = async (event) => {
         event.preventDefault();
+        const resp = await axios.get(`https://api.github.com/users/${this.state.userName}`);
         console.log(this.state.userName);
+        console.log(resp);
+        this.props.onSubmit(resp.data);
+        this.setState({userName: ''});
         //     console.log(this.userNameInput.current.value);
     };
 
@@ -95,14 +101,20 @@ class App extends React.Component {
     }*/
     // class properties without using the constructor method
     state = {
-        profiles: testData
+        profiles: []
+    }
+
+    addNewProfile = (profileData) => {
+        this.setState(prevState => ({
+            profiles: [...prevState.profiles, profileData]
+        }));
     }
 
     render() {
         return (
             <div>
                 <div className="header">{this.props.title}</div>
-                <Form/>
+                <Form onSubmit={this.addNewProfile}/>
                 <CardList profiles={this.state.profiles}/>
             </div>
         )
